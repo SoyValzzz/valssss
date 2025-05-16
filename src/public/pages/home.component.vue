@@ -5,9 +5,7 @@
       <p class="text-4xl text-white mt-4 animate-slide-up">{{ $t('home.to') }}</p>
 
       <!-- Botón EMPEZAR -->
-      <button @click="goToDashboard" class="custom-red-button mt-6 font-bold rounded-lg p-button-raised">
-        {{ $t('home.start') }}
-      </button>
+
     </div>
   </div>
 </template>

@@ -31,10 +31,12 @@ export default {
       } else if (role === 'disenador') {
         return [
           { labelKey: 'toolbar.home', to: '/home', icon: 'pi pi-home' },
+          { labelKey: 'toolbar.profile', to: '/profile', icon: 'pi pi-user' },
+          { labelKey: 'toolbar.portfolio', to: '/portfolio', icon: 'pi pi-briefcase' },
           { labelKey: 'toolbar.payments', to: '/payments', icon: 'pi pi-credit-card' },
           { labelKey: 'toolbar.qualifications', to: '/qualifications', icon: 'pi pi-graduation-cap' },
-          { labelKey: 'toolbar.message', to: '/message', icon: 'pi pi-comment' },
-          { labelKey: 'toolbar.portfolio', to: '/profile', icon: 'pi pi-briefcase' }
+          { labelKey: 'toolbar.message', to: '/message', icon: 'pi pi-comment' }
+
         ]
       }
       return []
@@ -60,6 +62,13 @@ export default {
         menu.value.toggle(event)
       }
     }
+
+    // 🚨 Redirección automática al login si no hay usuario
+    onMounted(() => {
+      if (!currentUser.value) {
+        router.push('/login')
+      }
+    })
 
     return {
       drawer,
@@ -101,14 +110,13 @@ export default {
         <div class="user-menu-wrapper">
           <template v-if="currentUser">
             <pv-button
-              class="toolbar-icon"
-              id="user-icon"
-              icon="pi pi-user"
-              @click="onUserButtonClick"
-              aria-haspopup="true"
-              aria-controls="user-menu"
+                class="toolbar-icon"
+                id="user-icon"
+                icon="pi pi-user"
+                @click="onUserButtonClick"
+                aria-haspopup="true"
+                aria-controls="user-menu"
             />
-            <!-- MUY IMPORTANTE: DEBE ESTAR JUSTO DESPUÉS DEL BOTÓN -->
             <pv-menu ref="menu" :model="menuItems" popup id="user-menu" />
           </template>
 
@@ -149,6 +157,7 @@ export default {
     <router-view />
   </main>
 </template>
+
 
 <style scoped>
 * {

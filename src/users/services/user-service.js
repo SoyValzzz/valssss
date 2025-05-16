@@ -3,7 +3,7 @@ import User from '../model/user.entity.js'
 
 const dummyUsers = [
   new User({ id: 1, name: 'Cliente Juan', email: 'cliente@example.com', password: '1234', role: 'cliente' }),
-  new User({ id: 2, name: 'Diseñador Ana', email: 'disenador@example.com', password: 'abcd', role: 'disenador' }),
+  new User({ id: 2, name: 'Diseñador Valentino', email: 'disenador@example.com', password: 'abcd', role: 'disenador' }),
 ]
 
 export async function loginUser(email, password) {

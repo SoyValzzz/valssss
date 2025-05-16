@@ -18,7 +18,6 @@ const router = createRouter({
     history: createWebHistory(),
     routes: [
         { path: '/home',     name: 'home',     component: HomeComponent,     meta: { title: 'Home' } },
-        { path: '/dashboard', name: 'Dashboard', component: Dashboard },
         { path: '/about',    name: 'about',    component: AboutComponent,    meta: { title: 'About us' } },
         { path: '/profile',  name: 'profile',  component: ProfilePage,       meta: { title: 'Profile' } },
         { path: '/portfolio', name: 'Portfolio', component: Portfolio },

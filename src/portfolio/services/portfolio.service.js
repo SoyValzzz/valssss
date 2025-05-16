@@ -20,17 +20,17 @@ export async function getProjects() {
             },
             {
                 "id": 2,
-                "title": "Magia en Movimiento",
+                "title": "Kuromi - El Mundo Oscuro",
                 "url": "#",
-                "image": "https://m.media-amazon.com/images/S/pv-target-images/a9d4b7304468dc759f95a943ceaadf1f0fca77b481fb5281f6d85e94a13c9f3a.jpg",
-                "likes": "23.4k",
-                "comments": "500",
-                "description": "Póster brillante y dinámico que captura la esencia de 'My Little Pony', con un enfoque en la magia y la amistad.",
+                "image": "https://i.pinimg.com/736x/d0/82/50/d0825037c7fd5eeabf462fb09991cdf8.jpg",
+                "likes": "9.4k",
+                "comments": "1.2k",
+                "description": "Kuromi es un personaje único con una actitud rebelde. Su mundo oscuro y su estilo punk la hacen inolvidable.",
                 "technologies": [
-                    "Illustrator",
-                    "Colorimetría digital",
-                    "Diseño vectorial",
-                    "Estilo infantil"
+                    "Procreate",
+                    "Estilo punk",
+                    "Ilustración digital",
+                    "Paleta oscura"
                 ]
             },
             {
@@ -93,23 +93,9 @@ export async function getProjects() {
                     "Color de alto contraste"
                 ]
             },
+
             {
                 "id": 7,
-                "title": "Kuromi - El Mundo Oscuro",
-                "url": "#",
-                "image": "https://i.pinimg.com/736x/d0/82/50/d0825037c7fd5eeabf462fb09991cdf8.jpg",
-                "likes": "9.4k",
-                "comments": "1.2k",
-                "description": "Kuromi es un personaje único con una actitud rebelde. Su mundo oscuro y su estilo punk la hacen inolvidable.",
-                "technologies": [
-                    "Procreate",
-                    "Estilo punk",
-                    "Ilustración digital",
-                    "Paleta oscura"
-                ]
-            },
-            {
-                "id": 8,
                 "title": "El Nuevo Superman: El Renacer de Krypton",
                 "url": "#",
                 "image": "https://cadenapolitica.com/wp-content/uploads/2024/12/teaser-superman-legacy-james-gunn-fecha-estreno-mexico-2025.webp",
@@ -124,7 +110,7 @@ export async function getProjects() {
                 ]
             },
             {
-                "id": 9,
+                "id": 8,
                 "title": "Tatuajes de la Vieja Escuela",
                 "url": "#",
                 "image": "https://i.pinimg.com/474x/bd/09/29/bd09299805e93880b2b405bec22e3738.jpg",
@@ -139,7 +125,7 @@ export async function getProjects() {
                 ]
             },
             {
-                "id": 10,
+                "id": 9,
                 "title": "Chainsaw Man - La Lucha por la Libertad",
                 "url": "#",
                 "image": "https://images6.alphacoders.com/125/1259119.jpg",

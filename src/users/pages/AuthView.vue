@@ -1,5 +1,8 @@
 <template>
   <div class="auth-wrapper">
+    <!-- Overlay que oscurece TODO el fondo -->
+    <div class="fullscreen-overlay"></div>
+
     <div class="auth-container" :class="{ 'right-panel-active': isRegister }">
       <!-- Login -->
       <div class="form-container sign-in-container">
@@ -41,6 +44,7 @@
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref } from 'vue'
@@ -211,5 +215,28 @@ button.ghost {
   z-index: 0;
   opacity: 0.6; /* Ajusta para más o menos visibilidad */
   border-radius: 0 10px 10px 0; /* solo si tu contenedor tiene bordes redondeados */
+}
+
+/* Overlay oscuro fullscreen */
+.fullscreen-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;  /* ancho viewport */
+  height: 100vh; /* alto viewport */
+  background-color: rgba(0, 0, 0, 0.7); /* opacidad para oscurecer */
+  z-index: 10;
+}
+
+/* Contenedor del modal arriba del overlay */
+.auth-container {
+  position: relative;
+  z-index: 20; /* debe ser mayor que .fullscreen-overlay */
+}
+
+/* Si quieres ajustar algo más para que el modal se destaque */
+.auth-wrapper {
+  position: relative; /* para contexto */
+  z-index: 15;
 }
 </style>

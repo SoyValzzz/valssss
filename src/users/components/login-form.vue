@@ -1,93 +1,108 @@
+<template>
+  <div class="form-container">
+    <h2 style="color: black;">Login</h2>
+    <form @submit.prevent="handleLogin">
+      <div class="field">
+        <label for="email">{{ t('login.emailLabel') }}</label>
+        <InputText
+            id="email"
+            v-model="credentials.email"
+            :class="{ 'p-invalid': submitted && !validEmail(credentials.email) }"
+        />
+        <small v-if="submitted && !validEmail(credentials.email)" class="p-error">
+          {{ t('login.errors.invalidEmail') }}
+        </small>
+      </div>
+
+      <div class="field">
+        <label for="password">{{ t('login.passwordLabel') }}</label>
+        <Password
+            id="password"
+            v-model="credentials.password"
+            toggleMask
+            :feedback="false"
+            :class="{ 'p-invalid': submitted && !credentials.password }"
+        />
+        <small v-if="submitted && !credentials.password" class="p-error">
+          {{ t('login.errors.passwordRequired') }}
+        </small>
+      </div>
+
+      <Button :label="t('login.button')" type="submit" class="mt-3" />
+
+      <Message v-if="success" severity="success" class="mt-3">
+        {{ t('login.successMessage') }}
+      </Message>
+
+      <Message v-if="errorMessage" severity="error" class="mt-3">
+        {{ errorMessage }}
+      </Message>
+    </form>
+  </div>
+</template>
+
 <script setup>
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { loginUser } from '../services/user-service.js'
+import { useUserSession } from '../services/user-session.store.js'
+
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 
 const { t } = useI18n()
+const router = useRouter()
+const { setUser } = useUserSession()
 
-const email = ref('')
-const password = ref('')
+const credentials = ref({
+  email: '',
+  password: ''
+})
+
 const submitted = ref(false)
-const internalError = ref('')
+const success = ref(false)
+const errorMessage = ref('')
 
-const emit = defineEmits(['login'])
+function validEmail(email) {
+  const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return pattern.test(email)
+}
 
-const props = defineProps({
-  errorMessage: String
-})
-
-watch(() => props.errorMessage, (newVal) => {
-  internalError.value = newVal
-})
-
-const handleLogin = () => {
+async function handleLogin() {
   submitted.value = true
+  errorMessage.value = ''
+  success.value = false
 
-  if (!email.value || !password.value) {
-    internalError.value = t('login.errors.requiredFields')
-    return
+  if (validEmail(credentials.value.email) && credentials.value.password) {
+    try {
+      const user = await loginUser(credentials.value.email, credentials.value.password)
+
+      if (user) {
+        setUser(user) // Guardar en localStorage
+        success.value = true
+        submitted.value = false
+
+        setTimeout(() => {
+          if (user.role === 'cliente') {
+            router.push('/home')
+          } else if (user.role === 'disenador') {
+            router.push('/home')
+          } else {
+            router.push('/dashboard')
+          }
+        }, 1500)
+      } else {
+        errorMessage.value = t('login.errors.invalidCredentials')
+      }
+    } catch (error) {
+      errorMessage.value = t('login.errors.invalidCredentials')
+    }
   }
-
-  internalError.value = ''
-  emit('login', { email: email.value, password: password.value })
 }
 </script>
-
-<template>
-  <div class="login-form-wrapper">
-    <div class="login-form-card">
-      <h2 class="title">{{ t('login.title') }}</h2>
-
-      <Message
-          severity="error"
-          v-if="internalError"
-          class="mb-3"
-          :closable="true"
-          icon="pi pi-exclamation-triangle"
-      >
-        {{ internalError }}
-      </Message>
-
-      <form @submit.prevent="handleLogin" class="form">
-        <div class="p-field mb-3">
-          <label for="email">{{ t('login.emailLabel') }}</label>
-          <InputText
-              id="email"
-              v-model="email"
-              type="email"
-              :placeholder="t('login.emailPlaceholder')"
-              class="w-full"
-          />
-          <small v-if="submitted && !email" class="p-error">
-            {{ t('login.errors.emailRequired') }}
-          </small>
-        </div>
-
-        <div class="p-field mb-3">
-          <label for="password">{{ t('login.passwordLabel') }}</label>
-          <Password
-              id="password"
-              v-model="password"
-              toggleMask
-              :placeholder="t('login.passwordPlaceholder')"
-              class="w-full"
-          />
-          <small v-if="submitted && !password" class="p-error">
-            {{ t('login.errors.passwordRequired') }}
-          </small>
-        </div>
-
-        <Button :label="t('login.button')" type="submit" class="w-full mb-2" />
-        <router-link to="/register">
-          <Button :label="t('login.registerLink')" class="p-button-text w-full" />
-        </router-link>
-      </form>
-    </div>
-  </div>
-</template>
 
 
 <style scoped>
