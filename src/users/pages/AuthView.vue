@@ -65,7 +65,7 @@ const onLogin = async (credentials) => {
   const user = await loginUser(credentials.email, credentials.password)
   if (user) {
     setUser(user)
-    router.push('/dashboard')
+    router.push('/home')
   } else {
     alert(t('auth.loginError'))
   }

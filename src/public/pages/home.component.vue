@@ -21,9 +21,7 @@ const changeLanguage = (lang) => {
   locale.value = lang;
 };
 
-const goToDashboard = () => {
-  router.push('/dashboard');
-};
+
 </script>
 
 

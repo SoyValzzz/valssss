@@ -116,7 +116,7 @@ async function handleLogin() {
           if (user.role === 'cliente' || user.role === 'disenador') {
             router.push('/home')
           } else {
-            router.push('/dashboard')
+            router.push('/home')
           }
         }, 1500)
       }

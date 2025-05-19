@@ -5,7 +5,7 @@ import AboutComponent from "../public/pages/about.component.vue";
 import CategoryManagementComponent from "../publishing/pages/category-management.component.vue";
 import ProfilePage from "../portfolio/pages/profile-page.component.vue";
 import Portfolio from '../portfolio/pages/portfolio.component.vue'
-import Dashboard from "../public/pages/dashboard.component.vue";
+
 import LoginPage from "../users/pages/login-page.vue";
 import RegisterPage from "../users/pages/register-page.vue";
 import DesignerPaymentsPage from "../payments/pages/designer-payments.page.vue"
