@@ -1,14 +1,11 @@
 <template>
-  <div class="profile-card">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-    <!-- SECCIÓN ROJA -->
+  <div class="profile-card">
     <div class="header">
-      <!-- Icono del perfil -->
       <div class="header-left">
         <div class="icon-container">
           <img :src="profile.icon || '/images/default-icon.jpg'" alt="Profile Icon" class="profile-icon" />
-          <!-- Ícono de cámara para cambiar el ícono -->
           <label class="camera-icon-icon">
             <i class="fas fa-camera"></i>
             <input type="file" @change="onIconChange" accept="image/*" class="upload-input-hidden" />
@@ -29,16 +26,13 @@
       </div>
     </div>
 
-    <!-- SECCIÓN BLANCA -->
     <div class="body">
       <div class="left-section">
         <div class="nav-buttons">
           <button class="btn-tab" @click="activeTab = 'about'">{{ $t('profile.aboutMe') }}</button>
           <button class="btn-tab" @click="activeTab = 'portfolio'">{{ $t('profile.portfolio') }}</button>
-          <button class="btn-tab" @click="openSocialMediaModal">{{ $t('profile.socialMedia') }}</button>
         </div>
 
-        <!-- ABOUT ME -->
         <div class="bio" v-if="activeTab === 'about'">
           <p>{{ profile.bio }}</p>
           <ul>
@@ -46,46 +40,42 @@
           </ul>
         </div>
 
-        <!-- PORTFOLIO -->
-
-        <PortfolioSection v-if="activeTab === 'portfolio'" />
-
+        <PortfolioSection
+            v-if="activeTab === 'portfolio'"
+            :projects="profile.projects"
+        />
       </div>
 
       <div class="right-section">
         <div class="profile-img-container" v-if="activeTab === 'about'">
           <img :src="profile.image || 'https://i.pravatar.cc/300?img=3'" alt="Profile Photo" class="profile-img" />
-
-          <!-- Ícono de cámara sobrepuesto -->
           <label class="camera-icon">
             <i class="fas fa-camera"></i>
             <input type="file" @change="onImageChange" accept="image/*" class="upload-input-hidden" />
           </label>
         </div>
 
-      </div>
-    </div>
-
-    <!-- MODAL SOCIAL MEDIA -->
-    <div class="modal social-modal" v-if="showSocialMedia">
-      <div class="modal-content">
-        <button class="close-btn" @click="closeSocialMediaModal">{{ $t('profile.close') }}</button>
-        <h2>{{ $t('profile.socialMedia') }}</h2>
-        <div class="social-photos">
-          <a :href="profile.social.instagram" target="_blank" rel="noopener noreferrer">
-            <img src="https://cdn-icons-png.flaticon.com/512/1384/1384063.png" alt="Instagram" />
+        <!-- Íconos con tooltip -->
+        <div class="social-icons-inline" v-if="activeTab === 'about'">
+          <a :href="profile.social.instagram" target="_blank" class="icon instagram">
+            <div class="tooltip">Instagram</div>
+            <i class="fa-brands fa-instagram"></i>
           </a>
-          <a :href="profile.social.facebook" target="_blank" rel="noopener noreferrer">
-            <img src="https://cdn-icons-png.flaticon.com/512/1384/1384053.png" alt="Facebook" />
+          <a :href="profile.social.facebook" target="_blank" class="icon facebook">
+            <div class="tooltip">Facebook</div>
+            <i class="fa-brands fa-facebook"></i>
           </a>
-          <a :href="profile.social.x" target="_blank" rel="noopener noreferrer">
-            <img src="https://cdn-icons-png.flaticon.com/512/5968/5968830.png" alt="X" />
+          <a :href="profile.social.x" target="_blank" class="icon x">
+            <div class="tooltip">X</div>
+            <i class="fa-brands fa-x-twitter"></i>
           </a>
         </div>
       </div>
     </div>
 
-    <!-- MODAL DE EDICIÓN -->
+
+
+    <!-- Modal Edición -->
     <div class="modal edit-modal" v-if="showEditModal">
       <div class="modal-content">
         <button class="close-btn" @click="closeEditModal">{{ $t('profile.close') }}</button>
@@ -116,9 +106,10 @@
         </form>
       </div>
     </div>
-
   </div>
 </template>
+
+
 
 <script setup>
 import PortfolioSection from '../pages/portfolio.component.vue';
@@ -139,8 +130,9 @@ const profile = ref({
     instagram: '',
     facebook: '',
     x: ''
-  }
-})
+  },
+  projects: [] // Agregamos proyectos aquí
+});
 
 const showSocialMedia = ref(false)
 const showEditModal = ref(false)
@@ -160,33 +152,97 @@ const closeEditModal = () => {
   showEditModal.value = false
 }
 
-const saveProfileChanges = () => {
+const saveProfileChanges = async () => {
   editableProfile.value.experience = experienceText.value.split('\n').map(e => e.trim()).filter(Boolean)
 
-  // Simula guardar en memoria (sin backend)
-  profile.value = JSON.parse(JSON.stringify(editableProfile.value))
-  closeEditModal()
+  try {
+    const response = await fetch(`https://my-json-server.typicode.com/SoyValzzz/Creatilink-db/profiles/${editableProfile.value.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editableProfile.value)
+    })
+
+
+    if (!response.ok) throw new Error('Error al guardar en el servidor')
+
+    const updated = await response.json()
+    profile.value = updated
+    closeEditModal()
+  } catch (error) {
+    alert('Error al guardar los cambios: ' + error.message)
+  }
 }
 
 
+// Carga el perfil y los proyectos
+// Carga el perfil y los proyectos
 onMounted(async () => {
   try {
-    const data = await getProfile()
-    profile.value = data
+    // Obtén el profileId desde localStorage (o desde la ruta si es un SPA con vue-router)
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+    // Si no hay profileId, muestra un error y termina
+    if (!currentUser || !currentUser.profileId) {
+      console.error('No se encontró profileId en el usuario');
+      return;
+    }
+
+    // Llamada para obtener el perfil por ID (usando profileId)
+    const res = await fetch(`https://my-json-server.typicode.com/SoyValzzz/Creatilink-db/profiles?id=${currentUser.profileId}`);
+    if (!res.ok) {
+      throw new Error('No se pudo cargar el perfil');
+    }
+    const data = await res.json();
+
+    // Si no se encuentra el perfil, muestra un error
+    if (!data || data.length === 0) {
+      console.error('Perfil no encontrado');
+      return;
+    }
+
+    // Asigna el perfil al estado
+    profile.value = data[0]; // Suponiendo que el servidor retorna un array con un solo perfil
+
+    // Luego de cargar el perfil, carga los proyectos del perfil
+    const projectsRes = await fetch(`https://my-json-server.typicode.com/SoyValzzz/Creatilink-db/projects?profileId=${profile.value.id}`);
+    if (!projectsRes.ok) {
+      throw new Error('No se pudo cargar los proyectos');
+    }
+    const projectsData = await projectsRes.json();
+    profile.value.projects = projectsData; // Asociamos los proyectos al perfil
+
   } catch (err) {
-    console.error('Error cargando perfil:', err)
+    console.error('Error cargando perfil:', err);
   }
-})
-const updateProfileField = (field, value) => {
-  profile.value[field] = value
+});
 
-  if (showEditModal.value) {
-    editableProfile.value = JSON.parse(JSON.stringify(profile.value))
-    experienceText.value = editableProfile.value.experience.join('\n')
+
+const updateProfileField = async (field, value) => {
+  try {
+    const updatedProfile = {...profile.value, [field]: value}
+
+    const response = await fetch(`https://my-json-server.typicode.com/SoyValzzz/Creatilink-db/profiles/${updatedProfile.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updatedProfile)
+    })
+
+
+    if (!response.ok) throw new Error('Error al actualizar el perfil')
+
+    const updated = await response.json()
+    profile.value = updated
+
+    if (showEditModal.value) {
+      editableProfile.value = JSON.parse(JSON.stringify(updated))
+      experienceText.value = editableProfile.value.experience.join('\n')
+    }
+  } catch (err) {
+    alert('Error al actualizar: ' + err.message)
+
   }
+
 }
-
-
 
 const onImageChange = (event) => {
   const file = event.target.files[0]
@@ -411,17 +467,21 @@ const goToPortfolio = () => {
 
 .modal.social-modal .modal-content {
   background: white;
-  padding: 2rem;
+  padding: 1.5rem 2rem;
   border-radius: 10px;
   position: relative;
   text-align: center;
   width: 90%;
-  max-width: 500px;
+  max-width: 400px;
+  max-height: 210px; /* límite de altura para que no sea muy alto */
+
   color: #000;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
+
+
 
 .modal.social-modal .close-btn {
   position: absolute;
@@ -536,5 +596,93 @@ form button {
 form button:hover {
   background-color: #9d2d44;
 }
+
+
+.icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 0 3px;
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  text-decoration: none;
+  color: inherit;
+}
+
+.icon .tooltip {
+  position: absolute;
+  top: -15px;
+  background: #333;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: 0.3s;
+  white-space: nowrap;
+}
+
+.icon:hover .tooltip {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.icon i {
+  font-size: 40px;
+}
+
+.icon.instagram i {
+  color: #E1306C; /* rosa característico Instagram */
+}
+
+.icon.facebook i {
+  color: #1877F2; /* azul Facebook */
+}
+
+.icon.x i {
+  color: #000000; /* azul Twitter (X) */
+}
+.icon.instagram .tooltip {
+  background: #E1306C; /* color rosa Instagram */
+}
+
+.icon.facebook .tooltip {
+  background: #1877F2; /* azul Facebook */
+}
+
+.icon.x .tooltip {
+  background: #000000; /* azul X (Twitter) */
+}
+
+
+
+.social-icons-inline {
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 0px;
+}
+
+.social-icons-inline .icon {
+  font-size: 20px;
+  color: #555;
+  transition: color 0.3s;
+}
+
+.social-icons-inline .icon:hover {
+  color: #e1306c; /* Instagram */
+}
+
+.social-icons-inline .facebook:hover {
+  color: #3b5998;
+}
+
+.social-icons-inline .x:hover {
+  color: #000;
+}
+
 
 </style>

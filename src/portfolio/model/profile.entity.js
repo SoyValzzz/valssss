@@ -1,13 +1,16 @@
+// src/entities/Profile.js
 export class Profile {
     constructor({
+                    id, // Agregamos un id para el perfil
                     name,
                     location,
                     bio,
                     image,
-                    icon,         // Nueva propiedad para el ícono
+                    icon, // Nueva propiedad para el ícono
                     experience,
-                    social        // Añadimos social para manejar redes sociales
+                    social // Redes sociales
                 }) {
+        this.id = id;
         this.name = name;
         this.location = location;
         this.bio = bio;

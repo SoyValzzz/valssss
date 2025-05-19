@@ -13,10 +13,12 @@ import ClientPaymentsPage from "../payments/pages/client-payments.page.vue"
 import FindDesignerPage from "../find-designer/pages/categories.page.vue"
 import CategoryResultPage from "../find-designer/pages/category-results.page.vue"
 import DesignerDetailPage from "../find-designer/pages/designer-detail.page.vue"
+import IntroView from "../public/pages/intro-view.vue";
 
 const router = createRouter({
     history: createWebHistory(),
     routes: [
+        { path: '/', component: IntroView },
         { path: '/home',     name: 'home',     component: HomeComponent,     meta: { title: 'Home' } },
         { path: '/about',    name: 'about',    component: AboutComponent,    meta: { title: 'About us' } },
         { path: '/profile',  name: 'profile',  component: ProfilePage,       meta: { title: 'Profile' } },

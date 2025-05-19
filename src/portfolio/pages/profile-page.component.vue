@@ -6,8 +6,20 @@ import ProfileCard from '../components/profile-card.component.vue';
 const profile = ref(null);
 
 onMounted(async () => {
-  profile.value = await getProfile();
+  try {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    if (!currentUser || !currentUser.profileId) {
+      console.error('Usuario no autenticado');
+      return;
+    }
+
+    profile.value = await getProfile(currentUser.profileId);
+  } catch (err) {
+    console.error('Error cargando perfil:', err);
+  }
 });
+
+
 </script>
 
 <template>

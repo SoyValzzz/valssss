@@ -1,9 +1,6 @@
 <template>
   <div class="portfolio-wrapper">
 
-
-
-    <!-- Contenedor para los botones alineados a la izquierda -->
     <div class="buttons-container-left">
       <button class="add-btn" @click="showAddModal = true"> {{ $t('portfolio.addProject') }}</button>
       <button class="delete-btn" @click="showDeleteModal"> {{ $t('portfolio.deleteProjects') }}</button>
@@ -55,7 +52,6 @@
         </div>
       </div>
     </div>
-
     <!-- MODAL ELIMINAR PROYECTOS -->
     <div class="delete-modal-backdrop" v-if="showDeleteModalFlag">
       <div class="delete-modal">
@@ -86,7 +82,6 @@
       </div>
     </div>
 
-
     <!-- MODAL DE CONFIRMAR ELIMINACIÓN -->
     <div class="delete-modal-backdrop" v-if="showConfirmDeleteModalFlag">
       <div class="delete-modal">
@@ -102,8 +97,6 @@
         </div>
       </div>
     </div>
-
-
   </div>
 </template>
 
@@ -120,30 +113,28 @@ const showDeleteModalFlag = ref(false)
 const showConfirmDeleteModalFlag = ref(false)
 const projectToDelete = ref(null)
 
-
-
-
 onMounted(async () => {
-  projects.value = await getProjects()
-})
+  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+  if (!currentUser || !currentUser.profileId) {
+    console.error('No se encontró el profileId');
+    return;
+  }
+  projects.value = await getProjects(currentUser.profileId);
+});
+
 
 const updateProject = async (updatedProject) => {
+  const index = projects.value.findIndex(p => p.id === updatedProject.id)
+  if (index !== -1) projects.value[index] = updatedProject
+
   try {
-    const index = projects.value.findIndex(p => p.id === updatedProject.id)
-    if (index !== -1) {
-      // Actualizar el proyecto en la lista local
-      projects.value[index] = { ...updatedProject }
-    } else {
-      console.warn('Proyecto no encontrado para actualizar.')
-    }
+    await axios.put(`https://my-json-server.typicode.com/SoyValzzz/Creatilink-db2/projects/${Number(updatedProject.id)}`, updatedProject);
+
   } catch (error) {
     console.error('Error al guardar cambios:', error)
   }
 }
 
-
-
-// Abrir el modal para eliminar proyectos
 const showDeleteModal = () => {
   showDeleteModalFlag.value = true
 }
@@ -154,30 +145,24 @@ const cancelDelete = () => {
   projectToDelete.value = null
 }
 
-// Mostrar el modal de confirmación de eliminación de un proyecto
 const showConfirmDeleteModal = (project) => {
   projectToDelete.value = project
   showConfirmDeleteModalFlag.value = true
 }
-
-// Confirmar la eliminación del proyecto
-// Confirmar la eliminación del proyecto (versión sin backend)
 const confirmDelete = async () => {
   try {
-    // Eliminar el proyecto de la lista en el frontend
-    projects.value = projects.value.filter(p => p.id !== projectToDelete.value.id)
+    await axios.delete(`https://my-json-server.typicode.com/SoyValzzz/Creatilink-db2/projects/${Number(projectToDelete.value.id)}`);
 
-    // Cerrar los modales
-    showConfirmDeleteModalFlag.value = false
-    showDeleteModalFlag.value = false
-    projectToDelete.value = null
+    projects.value = projects.value.filter(p => p.id !== projectToDelete.value.id);
+
+    showConfirmDeleteModalFlag.value = false;
+    showDeleteModalFlag.value = false;
+    projectToDelete.value = null;
   } catch (error) {
-    console.error('Error al eliminar el proyecto:', error)
+    console.error('Error al eliminar el proyecto:', error);
   }
-}
+};
 
-
-// Subir la imagen del proyecto
 const handleImageUpload = (event) => {
   const file = event.target.files[0]
   if (!file) return
@@ -188,8 +173,6 @@ const handleImageUpload = (event) => {
   reader.readAsDataURL(file)
 }
 
-// Guardar el nuevo proyecto
-// Guardar el nuevo proyecto (sin Axios, solo en el frontend)
 const saveNewProject = async () => {
   if (!newProject.value.title || !newProject.value.description || !newProject.value.image) {
     alert('Todos los campos son obligatorios.')
@@ -197,46 +180,53 @@ const saveNewProject = async () => {
   }
 
   try {
-    const existingProjects = projects.value || []
-    const maxId = existingProjects.reduce((max, p) => (p.id > max ? p.id : max), 0)
-    const newId = maxId + 1
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    const profileId = currentUser.profileId;
+    const { data: profile } = await axios.get(`https://my-json-server.typicode.com/SoyValzzz/Creatilink-db/profiles/${profileId}`);
 
-    const randomLikes = Math.floor(Math.random() * 90000 + 1000)
-    const randomComments = Math.floor(Math.random() * 15000 + 100)
+    if (!profile) {
+      console.error('Perfil no encontrado');
+      return;
+    }
+
+    if (!profile.projects) {
+      profile.projects = [];
+    }
+
+    const existingProjects = profile.projects;
+
+    const maxId = existingProjects.reduce((max, p) => (p.id > max ? p.id : max), 0);
+    const newId = maxId + 1;
+
+    const randomLikes = Math.floor(Math.random() * 90000 + 1000);
+    const randomComments = Math.floor(Math.random() * 15000 + 100);
 
     const techArray = newProject.value.technologies
-        ? newProject.value.technologies
-            .split(',')
-            .map(tech => tech.trim())
-            .filter(tech => tech.length > 0)
-        : []
+        .split(',')
+        .map(tech => tech.trim())
+        .filter(tech => tech.length > 0);
 
     const projectToAdd = {
       id: newId,
+      profileId: profileId,
       title: newProject.value.title,
       description: newProject.value.description,
       image: newProject.value.image,
-      url: '#',
-      likes: `${(randomLikes / 1000).toFixed(1)}k`,
-      comments: `${(randomComments / 1000).toFixed(1)}k`,
-      technologies: techArray
-    }
+      likes: randomLikes,
+      comments: randomComments,
+      technologies: techArray,
+    };
 
-    // Agregar el proyecto al listado local
-    projects.value.push(projectToAdd)
+    const { data: addedProject } = await axios.post('https://my-json-server.typicode.com/SoyValzzz/Creatilink-db/projects', projectToAdd);
+    projects.value.push(addedProject);
 
-    // Limpiar formulario y cerrar modal
-    showAddModal.value = false
-    newProject.value = { title: '', description: '', image: '', technologies: '' }
+    showAddModal.value = false;
+    newProject.value = { title: '', description: '', image: '', technologies: '' };
 
   } catch (error) {
-    console.error('Error al añadir proyecto:', error)
+    console.error('Error al añadir proyecto:', error);
   }
-}
-
-
-
-
+};
 
 </script>
 
@@ -254,43 +244,35 @@ const saveNewProject = async () => {
   position: relative;
   box-sizing: border-box;
   overflow-x: hidden;
-
-  /* Añade estos dos estilos */
-  background-color: #ffffff; /* Fondo blanco */
-  color: #000000; /* Texto negro */
+  background-color: #ffffff;
+  color: #000000;
 }
 
-
-/* Cuadrícula de portafolio con ajuste dinámico de columnas */
 .portfolio-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); /* Usamos auto-fit para un ajuste mejor */
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 24px;
   width: 100%;
   box-sizing: border-box;
   margin-top: 60px;
-  padding: 0 20px; /* Asegura que no haya espacio extra en los lados */
-  justify-items: center; /* Centra las tarjetas dentro de sus celdas */
+  padding: 0 20px;
+  justify-items: center;
 
 }
 
 
-/* Media queries para pantallas pequeñas */
 @media (max-width: 768px) {
   .portfolio-grid {
-    grid-template-columns: 1fr; /* En pantallas pequeñas, 1 columna */
-    gap: 16px; /* Reduce el espacio entre las tarjetas */
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 }
-
 @media (max-width: 480px) {
   .portfolio-wrapper {
-    padding: 20px 10px; /* Reduce el padding en pantallas más pequeñas */
+    padding: 20px 10px;
   }
 }
 
-
-/* Modal básico */
 .modal-backdrop {
   position: fixed;
   top: 0;
@@ -519,17 +501,17 @@ const saveNewProject = async () => {
 }
 
 
-/* Estilo para los botones sobre la primera tarjeta */
+
 .buttons-container-left {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
-  position: absolute; /* Coloca los botones encima de las tarjetas */
+  position: absolute;
   left: 0;
   top: 0;
   padding: 20px;
   z-index: 10;
-  width: 100%; /* Asegura que se acomoden bien */
+  width: 100%;
 }
 
 .add-btn, .delete-btn {
@@ -725,7 +707,7 @@ const saveNewProject = async () => {
   border-radius: 6px;
   cursor: pointer;
   transition: background 0.2s;
-  text-align: center; /* Asegura que el texto esté centrado */
+  text-align: center;
 
 
 }
@@ -736,8 +718,8 @@ const saveNewProject = async () => {
 
 .delete-modal-actions {
   display: flex;
-  justify-content: center; /* Centra horizontalmente */
-  align-items: center; /* Centra verticalmente */
+  justify-content: center;
+  align-items: center;
 
 
 }

@@ -71,8 +71,8 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { loginUser } from '../services/user-service.js'
-import { useUserSession } from '../services/user-session.store.js'
+import { authService } from '../services/auth.service.js' // ✅ Nuevo servicio
+// import { useUserSession } from '../services/user-session.store.js' // ❌ Opcional, si no usas más setUser()
 
 import InputText from 'primevue/inputtext'
 import Password from 'primevue/password'
@@ -81,7 +81,7 @@ import Message from 'primevue/message'
 
 const { t } = useI18n()
 const router = useRouter()
-const { setUser } = useUserSession()
+// const { setUser } = useUserSession() // ❌ si ya no se usa
 
 const credentials = ref({
   email: '',
@@ -105,24 +105,20 @@ async function handleLogin() {
 
   if (validEmail(credentials.value.email) && credentials.value.password) {
     try {
-      const user = await loginUser(credentials.value.email, credentials.value.password)
+      const user = await authService.login(credentials.value.email, credentials.value.password)
 
       if (user) {
-        setUser(user, rememberMe.value) // Guardar en localStorage o sessionStorage según rememberMe
+        // ✅ Ya se guarda en localStorage dentro de authService
         success.value = true
         submitted.value = false
 
         setTimeout(() => {
-          if (user.role === 'cliente') {
-            router.push('/home')
-          } else if (user.role === 'disenador') {
+          if (user.role === 'cliente' || user.role === 'disenador') {
             router.push('/home')
           } else {
             router.push('/dashboard')
           }
         }, 1500)
-      } else {
-        errorMessage.value = t('login.errors.invalidCredentials')
       }
     } catch (error) {
       errorMessage.value = t('login.errors.invalidCredentials')
@@ -130,11 +126,11 @@ async function handleLogin() {
   }
 }
 
-// Función para los login sociales (puedes implementarlos luego)
 function loginWith(provider) {
   alert(`Login with ${provider} clicked`)
 }
 </script>
+
 
 <style scoped>
 

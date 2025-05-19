@@ -1,12 +1,10 @@
-
+// src/model/user.entity.js
 export default class User {
-    constructor({ id = null, name, email, password, role = 'cliente' }) {
-      this.id = id
-      this.name = name
-      this.email = email
-      this.password = password
-      this.role = role
+    constructor({ id = null, email = '', password = '', role = '', profileId = null }) {
+        this.id = id;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.profileId = profileId;
     }
-  }
-  
-
+}
